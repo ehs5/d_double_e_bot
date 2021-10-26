@@ -1,0 +1,6 @@
+[reddit]
+user_agent = User Agent here
+client_id = Client ID here
+client_secret = Client secret here
+username = Reddit username here
+password = Reddit password here

@@ -1,7 +1,6 @@
 import configparser
 import random
 import time
-
 import praw
 
 search_name1 = " d double"
@@ -84,21 +83,19 @@ def reply_to_submission(submission):
 
 
 def process_comment(comment):
-    if comment.author.name != bot_username:
-        if comment.id not in get_txt_file_as_list(replied_comments_filename):
-            body = comment.body
-            normalized_body = body.lower()
-            if (search_name1 in normalized_body) or (search_name2 in body):
-                reply_to_comment(comment)
+    if comment.id not in get_txt_file_as_list(replied_comments_filename):
+        body = comment.body
+        normalized_body = body.lower()
+        if (search_name1 in normalized_body) or (search_name2 in body):
+            reply_to_comment(comment)
 
 
 def process_submission(submission):
-    if submission.author.name != bot_username:
-        if submission.id not in get_txt_file_as_list(replied_submissions_filename):
-            title = submission.title
-            normalized_title = title.lower()
-            if (search_name1 in normalized_title) or (search_name2 in title):
-                reply_to_submission(submission)
+    if submission.id not in get_txt_file_as_list(replied_submissions_filename):
+        title = submission.title
+        normalized_title = title.lower()
+        if (search_name1 in normalized_title) or (search_name2 in title):
+            reply_to_submission(submission)
 
 
 def comment_stream(reddit):

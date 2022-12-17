@@ -1,3 +1,4 @@
+# Config variables that is public to GitHub, as opposed to config.ini which is not
 SEARCH_NAME1 = " d double"
 SEARCH_NAME2 = "D Double"
 BOT_USERNAME = "d_double_e_bot"

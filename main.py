@@ -6,7 +6,8 @@ import praw
 
 
 def create_log_string_comment(comment, random_phrase) -> str:
-    return f"Man like u/{comment.author.name} in r/{comment.subreddit.display_name} commented:" \
+    return f"{util.get_time_now()}"                                                             \
+           f"Man like u/{comment.author.name} in r/{comment.subreddit.display_name} commented:" \
            f"\n{comment.body}"                                                                  \
            f"\nComment ID: {comment.id}"                                                        \
            f"\nReplied with: {random_phrase}"                                                   \
@@ -14,7 +15,8 @@ def create_log_string_comment(comment, random_phrase) -> str:
 
 
 def create_log_string_submission(submission, random_phrase):
-    return f"Man like u/{submission.author.name} in r/{submission.subreddit.display_name} made a submission:"   \
+    return f"{util.get_time_now()}"                                                                             \
+           f"\nMan like u/{submission.author.name} in r/{submission.subreddit.display_name} made a submission:" \
            f"\n{submission.title}"                                                                              \
            f"\nSubmission ID: {submission.id}"                                                                  \
            f"\nReplied with: {random_phrase}"                                                                   \
@@ -79,12 +81,6 @@ def submission_stream(reddit: praw.Reddit) -> None:
         process_submission(submission)
 
 
-def get_time_now() -> str:
-    local_time = time.localtime()  # get struct_time
-    time_now = time.strftime("%d.%m.%Y, %H:%M:%S", local_time)
-    return time_now
-
-
 def main() -> None:
     reddit_config = util.get_config_object("reddit")
 
@@ -100,13 +96,13 @@ def main() -> None:
     # Then sleep for 5 minutes and start again
     # Might not be best approach for high volume subreddits, since "pause_after" might never kick in? Not sure.
     while True:
-        print(f"{get_time_now()} - Starting streams")
+        print(f"{util.get_time_now()} - Starting streams")
 
         submission_stream(reddit)
         comment_stream(reddit)
 
         sleep_for_minutes = 5
-        print(f"{get_time_now()} - Going to sleep for {sleep_for_minutes} minutes.")
+        print(f"{util.get_time_now()} - Going to sleep for {sleep_for_minutes} minutes.")
         time.sleep(sleep_for_minutes * 60)
 
 

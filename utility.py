@@ -1,6 +1,6 @@
 import configparser
 from configparser import SectionProxy
-
+import time
 
 # Returns config.ini file as list
 def get_config_object(config_object_name: str) -> SectionProxy:
@@ -19,3 +19,8 @@ def add_to_txt_file(file_name: str, text: str) -> None:
 def get_txt_file_as_list(file_name: str) -> list[str]:
     txt_file_as_list = open(file_name).read().splitlines()
     return txt_file_as_list
+
+
+def get_time_now() -> str:
+    local_time = time.localtime()
+    return time.strftime("%d.%m.%Y, %H:%M:%S", local_time)

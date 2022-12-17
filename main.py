@@ -1,106 +1,63 @@
-import configparser
+import public_config as pc
+import utility as util
 import random
 import time
 import praw
 
-search_name1 = " d double"
-search_name2 = "D Double"
-bot_username = "d_double_e_bot"
-subreddit_names = "grime+ukdrill+ukhiphopheads"
-replied_comments_filename = "d_double_e_bot_replied_comments.txt"
-replied_submissions_filename = "d_double_e_bot_replied_submissions.txt"
-log_filename = "d_double_e_bot_log.txt"
 
-phrases = [
-    "Oooahh ooooaaah",
-    "Buda-bup-bup",
-    "Supadupe oooaah oooaah",
-    "Diirtty-tyyy",
-    "That's mmuuee muuue",
-    "Head get mangled then dangled, to the side just like I wear my Kangol",
-    "Head get mangled then dangled",
-    "Bluku blukuuu",
-    "That's very original, never heard that from another individual",
-    "Jackuuuum",
-    "Oh my wooord"
-    # "This one's a Percy Ingle... Jackuum!"
-]
+def create_log_string_comment(comment, random_phrase) -> str:
+    return f"Man like u/{comment.author.name} in r/{comment.subreddit.display_name} commented:" \
+           f"\n{comment.body}"                                                                  \
+           f"\nComment ID: {comment.id}"                                                        \
+           f"\nReplied with: {random_phrase}"                                                   \
+           f"\n------------------------------\n"
 
 
-def get_config_object(configObjectName):
-    # Read config.ini file
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-    config_object = config[configObjectName]
-    return config_object
+def create_log_string_submission(submission, random_phrase):
+    return f"Man like u/{submission.author.name} in r/{submission.subreddit.display_name} made a submission:"   \
+           f"\n{submission.title}"                                                                              \
+           f"\nSubmission ID: {submission.id}"                                                                  \
+           f"\nReplied with: {random_phrase}"                                                                   \
+           f"\n------------------------------\n"
 
 
-def add_to_txt_file(fileName, string):
-    file = open(fileName, 'a')
-    file.write(string)
-    file.close()
+def reply_to_comment(comment: praw.reddit.Comment) -> None:
+    random_phrase = random.choice(pc.PHRASES)
+    comment.reply(random_phrase)
+    util.add_to_txt_file(pc.REPLIED_COMMENTS_FILENAME, f"{comment.id}\n")
+    log_entry = create_log_string_comment(comment, random_phrase)
+    util.add_to_txt_file(pc.LOG_FILENAME, log_entry)
+    print(log_entry)
 
 
-def get_txt_file_as_list(fileName):
-    txtFileAsList = open(fileName).read().splitlines()
-    return txtFileAsList
+def reply_to_submission(submission: praw.reddit.Submission) -> None:
+    random_phrase = random.choice(pc.PHRASES)
+    submission.reply(random_phrase)
+    util.add_to_txt_file(pc.REPLIED_SUBMISSIONS_FILENAME, f"{submission.id}\n")
+    log_entry = create_log_string_submission(submission, random_phrase)
+    util.add_to_txt_file(pc.LOG_FILENAME, log_entry)
+    print(log_entry)
 
 
-def create_log_string_comment(comment, randomPhrase):
-    str1 = f"Man like u/{comment.author.name} in r/{comment.subreddit.display_name} commented:"
-    str2 = f"\n{comment.body}"
-    str3 = f"\nComment ID: {comment.id}"
-    str4 = f"\nReplied with: {randomPhrase}"
-    str5 = f"\n------------------------------\n"
-    return str1 + str2 + str3 + str4 + str5
-
-
-def create_log_string_submission(submission, randomPhrase):
-    str1 = f"Man like u/{submission.author.name} in r/{submission.subreddit.display_name} made a submission:"
-    str2 = f"\n{submission.title}"
-    str3 = f"\nSubmission ID: {submission.id}"
-    str4 = f"\nReplied with: {randomPhrase}"
-    str5 = f"\n------------------------------\n"
-    return str1 + str2 + str3 + str4 + str5
-
-
-def reply_to_comment(comment):
-    randomPhrase = random.choice(phrases)
-    comment.reply(randomPhrase)
-    add_to_txt_file(replied_comments_filename, f"{comment.id}\n")
-    logEntry = create_log_string_comment(comment, randomPhrase)
-    add_to_txt_file(log_filename, logEntry)
-    print(logEntry)
-
-
-def reply_to_submission(submission):
-    randomPhrase = random.choice(phrases)
-    submission.reply(randomPhrase)
-    add_to_txt_file(replied_submissions_filename, f"{submission.id}\n")
-    logEntry = create_log_string_submission(submission, randomPhrase)
-    add_to_txt_file(log_filename, logEntry)
-    print(logEntry)
-
-
-def process_comment(comment):
-    if comment.id not in get_txt_file_as_list(replied_comments_filename):
+def process_comment(comment: praw.reddit.Comment) -> None:
+    if comment.id not in util.get_txt_file_as_list(pc.REPLIED_COMMENTS_FILENAME):
         body = comment.body
         normalized_body = body.lower()
-        if (search_name1 in normalized_body) or (search_name2 in body):
+        if (pc.SEARCH_NAME1 in normalized_body) or (pc.SEARCH_NAME2 in body):
             reply_to_comment(comment)
 
 
-def process_submission(submission):
-    if submission.id not in get_txt_file_as_list(replied_submissions_filename):
+def process_submission(submission: praw.reddit.Submission) -> None:
+    if submission.id not in util.get_txt_file_as_list(pc.REPLIED_SUBMISSIONS_FILENAME):
         title = submission.title
         normalized_title = title.lower()
-        if (search_name1 in normalized_title) or (search_name2 in title):
+        if (pc.SEARCH_NAME1 in normalized_title) or (pc.SEARCH_NAME2 in title):
             reply_to_submission(submission)
 
 
-def comment_stream(reddit):
+def comment_stream(reddit: praw.Reddit) -> None:
     print("Starting comment stream")
-    subreddits = reddit.subreddit(subreddit_names)
+    subreddits = reddit.subreddit(pc.SUBREDDIT_NAMES)
 
     # Loop comment stream. "pause_after" will yield None if there are no new comments
     for comment in subreddits.stream.comments(pause_after=0):
@@ -110,9 +67,9 @@ def comment_stream(reddit):
         process_comment(comment)
 
 
-def submission_stream(reddit):
+def submission_stream(reddit: praw.Reddit) -> None:
     print("Starting submission stream")
-    subreddits = reddit.subreddit(subreddit_names)
+    subreddits = reddit.subreddit(pc.SUBREDDIT_NAMES)
 
     # Loop submission stream. "pause_after" will yield None if there are no new submissions
     for submission in subreddits.stream.submissions(pause_after=0):
@@ -122,36 +79,35 @@ def submission_stream(reddit):
         process_submission(submission)
 
 
-def get_time_now():
+def get_time_now() -> str:
     local_time = time.localtime()  # get struct_time
     time_now = time.strftime("%d.%m.%Y, %H:%M:%S", local_time)
     return time_now
 
 
-def main():
-    redditConfig = get_config_object("reddit")
+def main() -> None:
+    reddit_config = util.get_config_object("reddit")
 
     reddit = praw.Reddit(
-        user_agent=redditConfig["user_agent"],
-        client_id=redditConfig["client_id"],
-        client_secret=redditConfig["client_secret"],
-        username=redditConfig["username"],
-        password=redditConfig["password"]
+        user_agent=reddit_config["user_agent"],
+        client_id=reddit_config["client_id"],
+        client_secret=reddit_config["client_secret"],
+        username=reddit_config["username"],
+        password=reddit_config["password"]
     )
 
     # Go through comment stream and submission stream (pause_after in each of the streams will stop stream)
     # Then sleep for 5 minutes and start again
-    # Probably shouldnt be done like this for high volume subreddits, since "pause_after" might never kick in? Not sure.
+    # Might not be best approach for high volume subreddits, since "pause_after" might never kick in? Not sure.
     while True:
-        time_now_string = get_time_now()
         print(f"{get_time_now()} - Starting streams")
 
         submission_stream(reddit)
         comment_stream(reddit)
 
-        sleepForMinutes = 5
-        print(f"{get_time_now()} - Going to sleep for {sleepForMinutes} minutes.")
-        time.sleep(sleepForMinutes * 60)
+        sleep_for_minutes = 5
+        print(f"{get_time_now()} - Going to sleep for {sleep_for_minutes} minutes.")
+        time.sleep(sleep_for_minutes * 60)
 
 
 if __name__ == "__main__":
